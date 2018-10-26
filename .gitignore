@@ -1,5 +1,7 @@
 package-lock.json
 .idea
+nodemon.json
+
 
 # Logs
 logs
