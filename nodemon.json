@@ -3,6 +3,7 @@
       "SILK_JWT_KEY": "secret_this_should_be_longer",
       "SILK_MYSQL_USER": "root",
       "SILK_MYSQL_PASSWORD": "123456",
-      "SILK_MYSQL_DATABASE": "eshop"
+      "SILK_MYSQL_DATABASE": "eshop",
+      "GOOGLE_APPLICATION_CREDENTIALS": "C:\\Users\\Tsenguun\\Desktop\\Scraping\\Translate-Testing-171b376d9055.json"
     }
 }

@@ -31,33 +31,37 @@ exports.userLogin = (req, res, next) => {
         .then(user => {
             if (!user) {
                 return res.status(401).json({
-                    message: "Auth failed"
+                    message: "Email not found!"
                 });
             }
+
             fetchedUser = user;
-            return bcrypt.compare(req.body.password, user.password);
-        })
-        .then(result => {
-            if (!result) {
-                return res.status(401).json({
-                    message: "Auth failed"
+            bcrypt.compare(req.body.password, user.password).then(result => {
+                if (!result) {
+                    return res.status(401).json({
+                        message: "Password not right!"
+                    });
+                }
+                const token = jwt.sign(
+                    { email: fetchedUser.email, userId: fetchedUser.id },
+                    process.env.JWT_KEY,
+                    { expiresIn: "1h" }
+                );
+                return res.status(200).json({
+                    token: token,
+                    expiresIn: 3600,
+                    userId: fetchedUser.id
                 });
-            }
-            const token = jwt.sign(
-                { email: fetchedUser.email, userId: fetchedUser.id },
-                process.env.SILK_JWT_KEY,
-                { expiresIn: "1h" }
-            );
-            res.status(200).json({
-                token: token,
-                expiresIn: 3600,
-                userId: fetchedUser.id
-            });
-        })
-        .catch(err => {
-            return res.status(401).json({
-                message: 'Invalid authentication credentials!',
-                error: err
-            });
+            }).catch(err => {
+                return res.status(401).json({
+                    message: 'Encryption system failed',
+                    error: err
+                });
+            })
+        }).catch(err => {
+        return res.status(401).json({
+            message: 'Invalid authentication credentials!',
+            error: err
         });
+    });
 };
