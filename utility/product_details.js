@@ -62,7 +62,7 @@ async function taobao_product(item_id) {
 
         // Scrape the HTML
         const item_details_evaluation = await page.evaluate(() => {
-            item_html_details = {};
+            let item_html_details = {};
 
             item_html_details['main_title'] = document.querySelector('.tb-main-title').textContent.trim();
             item_html_details['sub_title'] = document.querySelector('.tb-subtitle').textContent;
@@ -156,6 +156,8 @@ function translate_product(item_details) {
     const colors = item_details['colors'].map(color => color.name);
     const colors_promise = translation(colors);
     const attributes_promise = translation(item_details['attributes']);
+    const sell_title_promise = translation(item_details['sell_title']);
+    const subtitle_promise = translation(item_details['sub_title']);
 
     // Put larger images on the preview image
     const images = item_details['images'];
@@ -164,11 +166,19 @@ function translate_product(item_details) {
         images[i]['big'] =images[i]['small'].replace('50x50', '400x400');
     }
 
-    return Promise.all([main_title_promise, colors_promise, attributes_promise])
+    return Promise.all([main_title_promise, colors_promise, attributes_promise, sell_title_promise, subtitle_promise])
         .then((responses) => {
             item_details['main_title'] = responses[0][0];
-            item_details['colors'] = responses[1][0];
+            let translated_colors = responses[1][0];
+
+            for (let i = 0; i < translated_colors.length; i++) {
+                item_details['colors'][i].name = translated_colors[i];
+            }
+
             item_details['attributes'] = responses[2][0];
+            item_details['sell_title'] = responses[3][0];
+            item_details['sub_title'] = responses[4][0];
+
             return item_details;
         }).catch((err) => {
             return err;
