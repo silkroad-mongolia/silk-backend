@@ -1,6 +1,6 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const db = require("../models");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const db = require('../models');
 const User = db.User;
 
 exports.createUser = (req, res, next) => {
@@ -12,7 +12,7 @@ exports.createUser = (req, res, next) => {
         User.create(user)
             .then(result => {
                 res.status(201).json({
-                    message: "User created!",
+                    message: 'User created!',
                     result: result
                 });
             })
@@ -31,7 +31,7 @@ exports.userLogin = (req, res, next) => {
         .then(user => {
             if (!user) {
                 return res.status(401).json({
-                    message: "Email not found!"
+                    message: 'Email not found!'
                 });
             }
 
@@ -39,13 +39,13 @@ exports.userLogin = (req, res, next) => {
             bcrypt.compare(req.body.password, user.password).then(result => {
                 if (!result) {
                     return res.status(401).json({
-                        message: "Password not right!"
+                        message: 'Password not right!'
                     });
                 }
                 const token = jwt.sign(
                     { email: fetchedUser.email, userId: fetchedUser.id },
                     process.env.JWT_KEY,
-                    { expiresIn: "1h" }
+                    { expiresIn: '1h' }
                 );
                 return res.status(200).json({
                     token: token,
