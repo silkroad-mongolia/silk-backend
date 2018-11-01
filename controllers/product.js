@@ -21,22 +21,16 @@ exports.getProduct = async (req, res, next) => {
 
         const product = await Product.findOne({where: { product_id: product_website['id'] }});
         if (!product) {
+            console.log('Product not found from database...' + product_website['id']);
             let item_details = {};
             if (product_website['taobao']) {
                 item_details = await scrape_product.taobao_product(product_website['id']);
             }
             const updated_item = await scrape_product.translate_product(item_details);
-            // console.log(item_details);
-            // const create_item = Object.assign(updated_item, {});
-
-
             res.status(200).json(updated_item);
         } else {
             res.status(200).json(product);
         }
-
-
-
     } catch (e) {
         res.status(404).json({
             'error': e

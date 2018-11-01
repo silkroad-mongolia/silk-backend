@@ -21,16 +21,19 @@ function isPositiveNumeric(s) {
 }
 
 function cleanImages(image_url) {
-    for (let i = image_url.length - 1; i >= 0; i--) {
-        if (image_url[i] === '_') {
-            return image_url.substring(0, i);
+    if (image_url) {
+        for (let i = image_url.length - 1; i >= 0; i--) {
+            if (image_url[i] === '_') {
+                return image_url.substring(0, i);
+            }
         }
     }
-    return image_url
+    return image_url;
 }
 
 async function taobao_product(item_id) {
     let item_details = {};
+    console.log(item_id);
     try {
         // Starting the browser
         const browser = await puppeteer.launch();
@@ -199,7 +202,7 @@ async function taobao_product(item_id) {
                 obj['image'] = li_looked_watched[i].querySelector('div > div > div > a > img').getAttribute('src');
                 let link = li_looked_watched[i].querySelector('div > div > div > a').getAttribute('href');
                 if (!link.startsWith('https://')) {
-                   link = 'https:' + link;
+                    link = 'https:' + link;
                 }
                 const url = new URL(link);
                 obj['product_id'] = url.searchParams.get('id');
@@ -240,11 +243,11 @@ async function taobao_product(item_id) {
 
             return item_html_details;
         });
-
         item_details = {...item_details_evaluation};
         item_details['sku'] = sku;
 
         await browser.close();
+        console.log('Scraping done...')
         return item_details;
     } catch (e) {
         console.log('error is :', e);
@@ -254,127 +257,133 @@ async function taobao_product(item_id) {
 
 // Translate and clean the item_details
 function translate_clean_product(item_details) {
-    if (item_details['price_regular'].startsWith('¥')) {
-        item_details['price_regular'] = item_details['price_regular'].substring(1);
-    }
-    // // Put larger images on the preview image
-    // const images = item_details['images'];
-    //
-    // for (let i = 0; i < images.length; i++) {
-    //     images[i]['big'] = images[i]['small'].replace('50x50', '400x400');
-    // }
-
-    // Clean up the color images
-    const color_images = item_details['colors'];
-
-    for (let i = 0; i < color_images.length; i++) {
-        let color_image = color_images[i]['image'];
-        let open_parenthesis = -1;
-        let closed_parenthesis = -1;
-        if (color_image) {
-            for (let j = 0; j < color_image.length; j++) {
-                if (color_image[j] === '(') {
-                    open_parenthesis = j;
-                    break
-                }
-            }
-            for (let j = color_image.length - 1; j >= 0; j--) {
-                if (color_image[j] === ')') {
-                    closed_parenthesis = j;
-                    break
-                }
-            }
-            if (open_parenthesis >= 0 && closed_parenthesis >= 0)
-                color_images[i]['image'] = color_image.substring(open_parenthesis + 1, closed_parenthesis);
+    console.log('Begin Translation...');
+    try {
+        if (item_details['price_regular'].startsWith('¥')) {
+            item_details['price_regular'] = item_details['price_regular'].substring(1);
         }
-    }
-
-    // Clean images
-    for (let i = 0; i < item_details['recommended'].length; i++) {
-        item_details['recommended'][i].image = cleanImages(item_details['recommended'][i].image);
-    }
-
-    for (let i = 0; i < item_details['looked_watched'].length; i++) {
-        item_details['looked_watched'][i].image = cleanImages(item_details['looked_watched'][i].image);
-    }
-
-    for (let i = 0; i < item_details['images'].length; i++) {
-        item_details['images'][i] = cleanImages(item_details['images'][i]);
-    }
-
-    for (let i = 0; i < item_details['colors'].length; i++) {
-        item_details['colors'][i].image = cleanImages(item_details['colors'][i].image);
-    }
-
-
-    // Begin translation
-    const main_title_promise = translation(item_details['main_title']);
-    const colors = item_details['colors'].map(color => color.name);
-    const colors_promise = translation(colors);
-    const attributes_promise = translation(item_details['attributes']);
-    const sell_title_promise = translation(item_details['sell_title']);
-    const subtitle_promise = translation(item_details['sub_title']);
-    const store_name_promise = translation(item_details['store']['name']);
-    const store_qualification_promise = translation(item_details['store']['qualification']);
-    const store_shopkeeper_promise = translation(item_details['store']['shopkeeper']);
-    const looked_watched_products = item_details['looked_watched'].map(prod => prod.title);
-    const looked_watched_promise = translation(looked_watched_products);
-    const recommended_products = item_details['recommended'].map(prod => prod.title);
-    const recommended_products_promise = translation(recommended_products);
-    const sizes = item_details['colors'].map(prod => prod.name);
-    const sizes_promise = translation(sizes);
-
-    return Promise.all([
-        main_title_promise,
-        colors_promise,
-        attributes_promise,
-        sell_title_promise,
-        subtitle_promise,
-        store_name_promise,
-        store_qualification_promise,
-        store_shopkeeper_promise,
-        looked_watched_promise,
-        recommended_products_promise,
-        sizes_promise
-    ])
-        .then((responses) => {
-            item_details['main_title'] = responses[0];
-            let translated_colors = responses[1];
-
-            for (let i = 0; i < translated_colors.length; i++) {
-                item_details['colors'][i].name = translated_colors[i];
+        // // Put larger images on the preview image
+        // const images = item_details['images'];
+        //
+        // for (let i = 0; i < images.length; i++) {
+        //     images[i]['big'] = images[i]['small'].replace('50x50', '400x400');
+        // }
+    
+        // Clean up the color images
+        const color_images = item_details['colors'];
+    
+        for (let i = 0; i < color_images.length; i++) {
+            let color_image = color_images[i]['image'];
+            let open_parenthesis = -1;
+            let closed_parenthesis = -1;
+            if (color_image) {
+                for (let j = 0; j < color_image.length; j++) {
+                    if (color_image[j] === '(') {
+                        open_parenthesis = j;
+                        break
+                    }
+                }
+                for (let j = color_image.length - 1; j >= 0; j--) {
+                    if (color_image[j] === ')') {
+                        closed_parenthesis = j;
+                        break
+                    }
+                }
+                if (open_parenthesis >= 0 && closed_parenthesis >= 0)
+                    color_images[i]['image'] = color_image.substring(open_parenthesis + 1, closed_parenthesis);
             }
-
-            item_details['attributes'] = responses[2];
-            item_details['sell_title'] = responses[3];
-            item_details['sub_title'] = responses[4];
-
-            item_details['store']['name'] = responses[5];
-            item_details['store']['qualification'] = responses[6];
-            item_details['store']['shopkeeper'] = responses[7];
-
-            let translated_lw_titles = responses[8];
-
-            for (let i = 0; i < translated_lw_titles.length; i++) {
-                item_details['looked_watched'][i].title = translated_lw_titles[i];
-            }
-
-            let translated_r_titles = responses[9];
-
-            for (let i = 0; i < translated_r_titles.length; i++) {
-                item_details['recommended'][i].title = translated_r_titles[i];
-            }
-
-            let translated_sizes = responses[10];
-
-            for (let i = 0; i < translated_sizes.length; i++) {
-                item_details['colors'][i].name = translated_sizes[i];
-            }
-
-            return item_details;
-        }).catch((err) => {
-            return err;
-        });
+        }
+    
+        // Clean images
+        for (let i = 0; i < item_details['recommended'].length; i++) {
+            item_details['recommended'][i].image = cleanImages(item_details['recommended'][i].image);
+        }
+    
+        for (let i = 0; i < item_details['looked_watched'].length; i++) {
+            item_details['looked_watched'][i].image = cleanImages(item_details['looked_watched'][i].image);
+        }
+    
+        for (let i = 0; i < item_details['images'].length; i++) {
+            item_details['images'][i] = cleanImages(item_details['images'][i]);
+        }
+    
+        for (let i = 0; i < item_details['colors'].length; i++) {
+            item_details['colors'][i].image = cleanImages(item_details['colors'][i].image);
+        }
+    
+    
+        // Begin translation
+        const main_title_promise = translation(item_details['main_title']);
+        const colors = item_details['colors'].map(color => color.name);
+        const colors_promise = translation(colors);
+        const attributes_promise = translation(item_details['attributes']);
+        const sell_title_promise = translation(item_details['sell_title']);
+        const subtitle_promise = translation(item_details['sub_title']);
+        const store_name_promise = translation(item_details['store']['name']);
+        const store_qualification_promise = translation(item_details['store']['qualification']);
+        const store_shopkeeper_promise = translation(item_details['store']['shopkeeper']);
+        const looked_watched_products = item_details['looked_watched'].map(prod => prod.title);
+        const looked_watched_promise = translation(looked_watched_products);
+        const recommended_products = item_details['recommended'].map(prod => prod.title);
+        const recommended_products_promise = translation(recommended_products);
+        const sizes = item_details['colors'].map(prod => prod.name);
+        const sizes_promise = translation(sizes);
+    
+        return Promise.all([
+            main_title_promise,
+            colors_promise,
+            attributes_promise,
+            sell_title_promise,
+            subtitle_promise,
+            store_name_promise,
+            store_qualification_promise,
+            store_shopkeeper_promise,
+            looked_watched_promise,
+            recommended_products_promise,
+            sizes_promise
+        ]).then((responses) => {
+                item_details['main_title'] = responses[0];
+                let translated_colors = responses[1];
+    
+                for (let i = 0; i < translated_colors.length; i++) {
+                    item_details['colors'][i].name = translated_colors[i];
+                }
+    
+                item_details['attributes'] = responses[2];
+                item_details['sell_title'] = responses[3];
+                item_details['sub_title'] = responses[4];
+    
+                item_details['store']['name'] = responses[5];
+                item_details['store']['qualification'] = responses[6];
+                item_details['store']['shopkeeper'] = responses[7];
+    
+                let translated_lw_titles = responses[8];
+    
+                for (let i = 0; i < translated_lw_titles.length; i++) {
+                    item_details['looked_watched'][i].title = translated_lw_titles[i];
+                }
+    
+                let translated_r_titles = responses[9];
+    
+                for (let i = 0; i < translated_r_titles.length; i++) {
+                    item_details['recommended'][i].title = translated_r_titles[i];
+                }
+    
+                let translated_sizes = responses[10];
+    
+                for (let i = 0; i < translated_sizes.length; i++) {
+                    item_details['colors'][i].name = translated_sizes[i];
+                }
+    
+                return item_details;
+            }).catch((err) => {
+                console.log(err);
+                return err;
+            });
+    } catch (e) {
+        console.log('Translation Error: ', e);
+    }
+    
 }
 
 module.exports.check_url = check_url;
