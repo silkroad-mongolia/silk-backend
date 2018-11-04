@@ -7,13 +7,13 @@ module.exports = {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4
       },
-      website: {
-        type: Sequelize.STRING
-      },
       product_id: {
         type: Sequelize.STRING,
         unique: true,
         allowNull: false
+      },
+      website: {
+          type: Sequelize.STRING
       },
       main_title: {
         type: Sequelize.STRING
@@ -58,6 +58,9 @@ module.exports = {
         type: Sequelize.TEXT
       },
       looked_watched: {
+        type: Sequelize.TEXT
+      },
+      recommended: {
         type: Sequelize.TEXT
       },
       createdAt: {

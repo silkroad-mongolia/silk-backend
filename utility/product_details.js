@@ -131,6 +131,15 @@ async function taobao_product(item_id) {
             item_html_details['main_title'] = document.querySelector('.tb-main-title').textContent.trim();
             item_html_details['sub_title'] = document.querySelector('.tb-subtitle').textContent;
 
+            item_html_details['popularity'] = '';
+            if (document.querySelector('.J_FavCount')) {
+                let popularity = document.querySelector('.J_FavCount').textContent.trim();
+                if (popularity.length >= 4) {
+                    popularity = popularity.substring(1, popularity.length - 3);
+                }
+                item_html_details['popularity'] = popularity;
+            }
+
             item_html_details['price_regular'] = document.querySelector('#J_StrPrice').textContent;
             item_html_details['price_promo'] = '';
             const price_promo = document.querySelector('#J_PromoPriceNum');
@@ -240,14 +249,14 @@ async function taobao_product(item_id) {
             item_html_details['colors'] = colors;
             item_html_details['images'] = images;
             item_html_details['store'] = item_store_details;
-
+            item_html_details['website'] = 'taobao';
             return item_html_details;
         });
         item_details = {...item_details_evaluation};
         item_details['sku'] = sku;
-
+        item_details['product_id'] = item_id;
         await browser.close();
-        console.log('Scraping done...')
+        console.log('Scraping done...');
         return item_details;
     } catch (e) {
         console.log('error is :', e);
@@ -326,7 +335,7 @@ function translate_clean_product(item_details) {
         const looked_watched_promise = translation(looked_watched_products);
         const recommended_products = item_details['recommended'].map(prod => prod.title);
         const recommended_products_promise = translation(recommended_products);
-        const sizes = item_details['colors'].map(prod => prod.name);
+        const sizes = item_details['sizes'].map(prod => prod.name);
         const sizes_promise = translation(sizes);
     
         return Promise.all([
@@ -372,9 +381,9 @@ function translate_clean_product(item_details) {
                 let translated_sizes = responses[10];
     
                 for (let i = 0; i < translated_sizes.length; i++) {
-                    item_details['colors'][i].name = translated_sizes[i];
+                    item_details['sizes'][i].name = translated_sizes[i];
                 }
-    
+                console.log('Translation Done...');
                 return item_details;
             }).catch((err) => {
                 console.log(err);

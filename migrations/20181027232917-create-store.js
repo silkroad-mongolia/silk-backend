@@ -38,7 +38,9 @@ module.exports = {
         type: Sequelize.STRING
       },
       store_link: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
       },
       ratings_link: {
         type: Sequelize.STRING

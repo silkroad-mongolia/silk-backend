@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {});
   PreviewProduct.associate = function(models) {
       PreviewProduct.belongsTo(models.Store);
+      PreviewProduct.belongsToMany(models.Product, {through: models.RecommendedProducts});
   };
   return PreviewProduct;
 };

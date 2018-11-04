@@ -25,10 +25,12 @@ module.exports = (sequelize, DataTypes) => {
     images: DataTypes.TEXT,
     sku: DataTypes.TEXT,
     looked_watched: DataTypes.TEXT,
+    recommended: DataTypes.TEXT,
     StoreId: DataTypes.UUID
   }, {});
   Product.associate = function(models) {
     Product.belongsTo(models.Store);
+    Product.belongsToMany(models.PreviewProduct, {through: models.RecommendedProducts});
   };
   return Product;
 };
