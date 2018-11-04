@@ -1,7 +1,7 @@
 package-lock.json
 .idea
 nodemon.json
-
+config/
 
 # Logs
 logs
