@@ -9,7 +9,6 @@
   "author": "monchir",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/translate": "^2.1.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
     "china-google-translate-api": "^2.3.2",
